@@ -8,10 +8,12 @@ use App\Domain\Shared\AggregateRoot;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Role;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: \App\Infrastructure\Doctrine\Repository\DoctrineUserRepository::class)]
 #[ORM\Table(name: 'users')]
-class User extends AggregateRoot
+class User extends AggregateRoot implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: 'string', length: 36)]
@@ -69,8 +71,33 @@ class User extends AggregateRoot
         $this->name = trim($name);
     }
 
+    public function changePasswordHash(string $hash): void
+    {
+        $this->passwordHash = $hash;
+    }
+
     public function promoteToAdmin(): void
     {
         $this->role = Role::Admin;
     }
+
+    // ── Symfony UserInterface ────────────────────────────────────────────────
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email->value();
+    }
+
+    /** @return string[] */
+    public function getRoles(): array
+    {
+        return [$this->role->value];
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->passwordHash;
+    }
+
+    public function eraseCredentials(): void {}
 }
