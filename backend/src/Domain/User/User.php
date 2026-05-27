@@ -7,19 +7,44 @@ namespace App\Domain\User;
 use App\Domain\Shared\AggregateRoot;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Role;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Entity(repositoryClass: \App\Infrastructure\Doctrine\Repository\DoctrineUserRepository::class)]
+#[ORM\Table(name: 'users')]
 class User extends AggregateRoot
 {
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: 36)]
+    private string $id;
+
+    #[ORM\Embedded(class: Email::class, columnPrefix: false)]
+    private Email $email;
+
+    #[ORM\Column(name: 'password_hash', type: 'string', length: 255)]
+    private string $passwordHash;
+
+    #[ORM\Column(name: 'name', type: 'string', length: 100)]
+    private string $name;
+
+    #[ORM\Column(name: 'role', enumType: Role::class, length: 20)]
+    private Role $role;
+
+    #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
     public function __construct(
-        private readonly string $id,
-        private Email $email,
-        private string $passwordHash,
-        private string $name,
-        private Role $role = Role::User,
+        string $id,
+        Email $email,
+        string $passwordHash,
+        string $name,
+        Role $role = Role::User,
     ) {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->id           = $id;
+        $this->email        = $email;
+        $this->passwordHash = $passwordHash;
+        $this->name         = $name;
+        $this->role         = $role;
+        $this->createdAt    = new \DateTimeImmutable();
     }
 
     public static function register(string $id, Email $email, string $passwordHash, string $name): self
