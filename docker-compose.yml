@@ -65,7 +65,8 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:8080
       # Internal URL for SSR server-side fetches inside Docker network
       API_INTERNAL_URL: http://nginx
-    command: sh -c "[ -f package.json ] && npm run dev || echo 'Frontend not bootstrapped yet — run: docker compose exec frontend sh'"
+    command: >-
+      sh -c "[ -f package.json ] && npm run dev || echo 'Frontend not bootstrapped yet: docker compose exec frontend sh'"
     depends_on:
       - nginx
     networks:
