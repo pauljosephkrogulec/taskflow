@@ -5,21 +5,44 @@ declare(strict_types=1);
 namespace App\Domain\Comment;
 
 use App\Domain\Shared\AggregateRoot;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Entity(repositoryClass: \App\Infrastructure\Doctrine\Repository\DoctrineCommentRepository::class)]
+#[ORM\Table(name: 'comments')]
 class Comment extends AggregateRoot
 {
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: 36)]
+    private string $id;
+
+    #[ORM\Column(name: 'task_id', type: 'string', length: 36)]
+    private string $taskId;
+
+    #[ORM\Column(name: 'author_id', type: 'string', length: 36)]
+    private string $authorId;
+
+    #[ORM\Column(name: 'content', type: 'text')]
+    private string $content;
+
+    #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
 
     public function __construct(
-        private readonly string $id,
-        private readonly string $taskId,
-        private readonly string $authorId,
-        private string $content,
+        string $id,
+        string $taskId,
+        string $authorId,
+        string $content,
     ) {
         if (trim($content) === '') {
             throw new \InvalidArgumentException('Comment content cannot be empty.');
         }
+        $this->id        = $id;
+        $this->taskId    = $taskId;
+        $this->authorId  = $authorId;
+        $this->content   = $content;
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
     }

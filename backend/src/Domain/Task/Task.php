@@ -9,26 +9,61 @@ use App\Domain\Shared\AggregateRoot;
 use App\Domain\Task\Exception\AssigneeNotProjectMemberException;
 use App\Domain\Task\Exception\InvalidTaskTransitionException;
 use App\Domain\Task\ValueObject\TaskStatus;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Entity(repositoryClass: \App\Infrastructure\Doctrine\Repository\DoctrineTaskRepository::class)]
+#[ORM\Table(name: 'tasks')]
 class Task extends AggregateRoot
 {
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: 36)]
+    private string $id;
+
+    #[ORM\Column(name: 'project_id', type: 'string', length: 36)]
+    private string $projectId;
+
+    #[ORM\Column(name: 'title', type: 'string', length: 255)]
+    private string $title;
+
+    #[ORM\Column(name: 'description', type: 'text', nullable: true)]
+    private ?string $description;
+
+    #[ORM\Column(name: 'status', enumType: TaskStatus::class, length: 20)]
     private TaskStatus $status;
+
+    #[ORM\Column(name: 'assignee_id', type: 'string', length: 36, nullable: true)]
     private ?string $assigneeId;
+
+    #[ORM\Column(name: 'reporter_id', type: 'string', length: 36, nullable: true)]
+    private ?string $reporterId;
+
+    #[ORM\Column(name: 'due_date', type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $dueDate;
+
+    #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
 
     public function __construct(
-        private readonly string $id,
-        private readonly string $projectId,
-        private string $title,
-        private ?string $description,
-        private ?string $reporterId,
-        private ?\DateTimeImmutable $dueDate,
+        string $id,
+        string $projectId,
+        string $title,
+        ?string $description,
+        ?string $reporterId,
+        ?\DateTimeImmutable $dueDate,
     ) {
-        $this->status     = TaskStatus::Todo;
-        $this->assigneeId = null;
-        $this->createdAt  = new \DateTimeImmutable();
-        $this->updatedAt  = new \DateTimeImmutable();
+        $this->id          = $id;
+        $this->projectId   = $projectId;
+        $this->title       = $title;
+        $this->description = $description;
+        $this->reporterId  = $reporterId;
+        $this->dueDate     = $dueDate;
+        $this->status      = TaskStatus::Todo;
+        $this->assigneeId  = null;
+        $this->createdAt   = new \DateTimeImmutable();
+        $this->updatedAt   = new \DateTimeImmutable();
     }
 
     public static function create(
